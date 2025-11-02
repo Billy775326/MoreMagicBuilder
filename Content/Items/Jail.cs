@@ -30,7 +30,7 @@ namespace MoreMagicBuilder.Content.Items
             Vector2 myVector = Main.MouseWorld;//获取鼠标在世界中的位置单位是“像素”
             Point p = myVector.ToTileCoordinates();//将“像素坐标”转换为“图块坐标”
             //GenerateStructure(p);
-            ModContent.GetInstance<JailFactory2>().StartGenerating(p);
+            ModContent.GetInstance<JailFactory>().StartGenerating(p);
             return false;
         }
 
