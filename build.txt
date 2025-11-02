@@ -1,0 +1,3 @@
+displayName = MagicBuilder++
+author = Billy12
+version = 0.1
