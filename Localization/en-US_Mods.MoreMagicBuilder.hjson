@@ -1,22 +1,14 @@
 # This file will automatically update with entries for new content after a build and reload.
 
 Items: {
-	Example: {
-		DisplayName: Example
-		Tooltip: 原初之刃
-	}
-
+	
 	Jail: {
-		DisplayName: Jail
-		Tooltip: 无敌
+		DisplayName: 魔法盒子
+		Tooltip: 一个用来关押某人的小盒子,这显然不道德。
 	}
 
-	BuildNPC: {
-		DisplayName: BuildNPC
-		Tooltip:
-			'''
-			无敌的人
-			寂寞
-			'''
+	JailA: {
+		DisplayName: Jail A
+		Tooltip: ""
 	}
 }
