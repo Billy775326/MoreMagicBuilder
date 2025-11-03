@@ -46,10 +46,10 @@ namespace MoreMagicBuilder.Content.Items
         public override void AddRecipes()
         {
             CreateRecipe()
-                .AddIngredient(ItemID.Wood, 30)       // 30 木头
-                .AddIngredient(ItemID.StoneBlock, 10) // 10 石头
+                .AddIngredient(ItemID.Wood, 0)       // 40 木头
+                //.AddIngredient(ItemID.StoneBlock, 10) // 10 石头
                 .AddIngredient(ItemID.Gel, 1)        // 1 凝胶
-                .AddTile(TileID.Furnaces)           //制作台熔炉
+                .AddTile(TileID.WorkBenches)           //制作台 工作台
                 .Register(); // 注册配方
         }
 
@@ -60,7 +60,7 @@ namespace MoreMagicBuilder.Content.Items
             Point p = myVector.ToTileCoordinates();//将“像素坐标”转换为“图块坐标”
             //GenerateStructure(p);
             ModContent.GetInstance<JailFactory>().StartGenerating(p);
-            Main.NewText("🔧 UseItem 被调用！", 255, 0, 0); // 红色提示
+            //Main.NewText("🔧 UseItem 被调用！", 255, 0, 0); // 红色提示
 
             // ✅ 使用成功，返回 true 表示消耗物品
             return true;

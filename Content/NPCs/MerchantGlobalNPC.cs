@@ -14,6 +14,7 @@ namespace MoreMagicBuilder.Content.NPCs
             {
                 // 添加物品到商店（永远出售）
                 shop.Add<Jail>();
+                shop.Add<JailA>();
             }
         }
     }

@@ -7,10 +7,10 @@ using MoreMagicBuilder.Content.Items;
 
 namespace MoreMagicBuilder.Content.DrawLayers
 {
-    public class JailBlueprintLayer : ModSystem
+    public class JailABlueprintLayer : ModSystem
     {
-        private const int StructureWidth = 6;
-        private const int StructureHeight = 10;
+        private const int StructureWidth = 5;
+        private const int StructureHeight = 12;
         
         // --- 帧同步变量 ---
         // 移除帧计数器，采用每帧实时更新
@@ -20,7 +20,7 @@ namespace MoreMagicBuilder.Content.DrawLayers
         
         // 存储蓝图左上角的世界物块坐标，用于跨钩子同步。
         private Point _blueprintTopLeftTile;
-        // 存储玩家是否手持 Jail 物品的状态。
+        // 存储玩家是否手持 JailA 物品的状态。
         private bool _isHoldingBlueprintItem = false;
 
 
@@ -35,7 +35,7 @@ namespace MoreMagicBuilder.Content.DrawLayers
             }
 
             // 检查是否手持物品，并同步状态
-            _isHoldingBlueprintItem = player.HeldItem != null && player.HeldItem.type == ModContent.ItemType<Jail>();
+            _isHoldingBlueprintItem = player.HeldItem != null && player.HeldItem.type == ModContent.ItemType<JailA>();
             
             if (!_isHoldingBlueprintItem)
             {
@@ -65,7 +65,7 @@ namespace MoreMagicBuilder.Content.DrawLayers
             
             if (!_debugPrinted)
             {
-                Main.NewText($"[JailBlueprintLayer] Final logic: Mouse is Bottom Center (X-3, Y-9).", 0, 200, 255);
+                Main.NewText($"[JailABlueprintLayer] Final logic: Mouse is Bottom Center (X-3, Y-9).", 0, 200, 255);
                 _debugPrinted = true;
             }
 
