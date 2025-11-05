@@ -1,0 +1,12 @@
+{
+	"Items": {
+		"Jail": {
+			"DisplayName": "魔法盒子",
+			"Tooltip": "一个用来关押某人的小盒子，这显然不道德。"
+		},
+		"JailA": {
+			"DisplayName": "魔法盒子A",
+			"Tooltip": "又一个用来关押某人的小盒子，这显然太不道德了。"
+		}
+	}
+}

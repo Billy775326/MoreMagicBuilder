@@ -1,6 +1,6 @@
 <div align="center">
 
-<img alt="LOGO" src="MoreMagicBuilder.jpg" width="64" height="64" />
+<img alt="LOGO" src="MoreMagicBuilder.jpg" width="256" height="256" />
 
 # MoreMagicBuilder
 terrariamod,also known as MagicBuilder++   

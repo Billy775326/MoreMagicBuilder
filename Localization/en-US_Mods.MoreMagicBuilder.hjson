@@ -2,12 +2,12 @@
 
 Items: {
 	Jail: {
-		DisplayName: 魔法盒子
-		Tooltip: 一个用来关押某人的小盒子,这显然不道德。
+		DisplayName: Magic Box
+		Tooltip: A tiny box used to imprison someone. That's clearly unethical.
 	}
 
 	JailA: {
-		DisplayName: 魔法盒子A
-		Tooltip: 又一个用来关押某人的小盒子,这显然太不道德。
+		DisplayName: Magic Box A
+		Tooltip: Another tiny prison device. Even more unethical than the last one.
 	}
 }
