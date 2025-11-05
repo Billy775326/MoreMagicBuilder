@@ -46,8 +46,8 @@ namespace MoreMagicBuilder.Content.Items
         public override void AddRecipes()
         {
             CreateRecipe()
-                .AddIngredient(ItemID.Wood, 20)       // 30 木头
-                .AddIngredient(ItemID.StoneBlock, 5) // 5 石头 StonePlatform
+                .AddIngredient(ItemID.Wood, 20)       // 20 木头
+                .AddIngredient(ItemID.StoneBlock, 5) // 5 石头 GrayBrick石砖
                 .AddIngredient(ItemID.IronOre, 3)    // 3 铁矿 IronBrick 
                 .AddIngredient(ItemID.Gel, 1)        // 1 凝胶
                 .AddTile(TileID.Furnaces)           //制作台 熔炉

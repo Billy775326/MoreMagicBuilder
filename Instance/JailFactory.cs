@@ -1,4 +1,3 @@
-// DelayedStructureSystem.cs
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -7,268 +6,285 @@ using Terraria.ModLoader;
 
 public class JailFactory : ModSystem
 {
-    private int _timer = 0;
-    private Point _origin;
+    // 按 Y 行分组的操作点
+    private Dictionary<int, List<Point>> _digTilesByY = new();
+    private Dictionary<int, List<Point>> _killWallsByY = new();
+    private Dictionary<int, List<Point>> _placeWallsByY = new();
+    private Dictionary<int, List<Point>> _placeTiles_dn_ByY = new(); // 下层平台
+    private Dictionary<int, List<Point>> _placeTiles_up_ByY = new(); // 上层木块
 
-    // 存储要操作的坐标
-    private HashSet<Point> _tilesToDig;
-    private HashSet<Point> _wallsToKill;
-    private HashSet<Point> _wallsToPlace;
-    private HashSet<Point> _tilesToPlace_dn;
-    private HashSet<Point> _tilesToPlace_up;
-
+    private List<int> _allYs = new(); // 所有需要处理的 Y 坐标（从下到上排序）
+    private int _currentIndex = 0;
+    private int _delayTimer = 0;
     private bool _isProcessing = false;
-
-    // 控制进度：逐层向上
-    private int _currentY;
-    private int _minY;
-    private int _maxY;
-
-    // 火把延迟放置
-    private bool _pendingTorchPlacement = false;
-    private int _torchX, _torchY;
+    private Point _origin;
 
     public void StartGenerating(Point origin)
     {
         if (_isProcessing) return;
+
         _origin = origin;
+        _isProcessing = true;
+        _currentIndex = 0;
+        _delayTimer = 0;
+
+        // 清空旧数据
+        _digTilesByY.Clear();
+        _killWallsByY.Clear();
+        _placeWallsByY.Clear();
+        _placeTiles_dn_ByY.Clear();
+        _placeTiles_up_ByY.Clear();
+        _allYs.Clear();
 
         int width = 6;
-        int height_dn = 4;
-        int height_up = 6;
-        int totalHeight = height_dn + height_up;
+        int height_dn = 4; // 下层高度
+        int height_up = 6; // 上层高度
+        int totalHeight = height_up + height_dn;
+        int startY = origin.Y - totalHeight + 1; // 整体顶部 Y
 
-        _minY = origin.Y;
-        _maxY = origin.Y - totalHeight + 1;
-
-        _tilesToDig = new HashSet<Point>();
-        _wallsToKill = new HashSet<Point>();
-        _wallsToPlace = new HashSet<Point>();
-        _tilesToPlace_dn = new HashSet<Point>();
-        _tilesToPlace_up = new HashSet<Point>();
-
-        // 收集：挖掘区域 (6x10)
+        // === Step 1: 预计算所有要挖的 tile（按 Y 分组）===
         for (int y = 0; y < totalHeight; y++)
         {
+            int worldY = startY + y;
+            List<Point> tilesInRow = new();
+
             for (int x = 0; x < width; x++)
             {
                 int worldX = origin.X - width / 2 + x;
-                int worldY = _maxY + y;
                 if (WorldGen.InWorld(worldX, worldY))
-                    _tilesToDig.Add(new Point(worldX, worldY));
+                {
+                    tilesInRow.Add(new Point(worldX, worldY));
+                }
+            }
+
+            if (tilesInRow.Count > 0)
+            {
+                _digTilesByY[worldY] = tilesInRow;
+                if (!_allYs.Contains(worldY)) _allYs.Add(worldY);
             }
         }
 
-        // 收集：清除墙区域 (内部 4x8)
-        int wallWidth = width - 2;
+        // === Step 2: 预计算要清除和放置的墙（内部区域）===
+        int wallStartY = startY + 1;
         int wallHeight = totalHeight - 2;
+        int wallWidth = width - 2;
+
         for (int y = 0; y < wallHeight; y++)
         {
+            int worldY = wallStartY + y;
+            List<Point> wallsInRow = new();
+
             for (int x = 0; x < wallWidth; x++)
             {
                 int worldX = origin.X - width / 2 + 1 + x;
-                int worldY = _maxY + 1 + y;
                 if (WorldGen.InWorld(worldX, worldY))
-                    _wallsToKill.Add(new Point(worldX, worldY));
+                {
+                    wallsInRow.Add(new Point(worldX, worldY));
+                }
+            }
+
+            if (wallsInRow.Count > 0)
+            {
+                _killWallsByY[worldY] = wallsInRow;
+                _placeWallsByY[worldY] = new List<Point>(wallsInRow);
+                if (!_allYs.Contains(worldY)) _allYs.Add(worldY);
             }
         }
 
-        // 收集：放置墙区域（与清除区域一致）
-        _wallsToPlace = new HashSet<Point>(_wallsToKill);
-
-        // 收集：下层 U形平台 (6x4)
+        // === Step 3: 下层 U 形平台（按 Y 分组）===
         for (int y = 0; y < height_dn; y++)
         {
+            int worldY = origin.Y - height_dn + 1 + y;
+            List<Point> tilesInRow = new();
+
             for (int x = 0; x < width; x++)
             {
                 bool shouldPlace = (y == height_dn - 1) || (x == 0) || (x == width - 1);
-                int worldX = origin.X - width / 2 + x;
-                int worldY = origin.Y - height_dn + 1 + y;
-                if (shouldPlace && WorldGen.InWorld(worldX, worldY))
-                    _tilesToPlace_dn.Add(new Point(worldX, worldY));
+                if (shouldPlace)
+                {
+                    int worldX = origin.X - width / 2 + x;
+                    if (WorldGen.InWorld(worldX, worldY))
+                    {
+                        tilesInRow.Add(new Point(worldX, worldY));
+                    }
+                }
+            }
+
+            if (tilesInRow.Count > 0)
+            {
+                _placeTiles_dn_ByY[worldY] = tilesInRow;
+                if (!_allYs.Contains(worldY)) _allYs.Add(worldY);
             }
         }
 
-        // 收集：上层环形木块 (6x6)
+        // === Step 4: 上层环形木块（按 Y 分组）===
+        int upperTopY = origin.Y - height_dn - height_up + 1;
         for (int y = 0; y < height_up; y++)
         {
+            int worldY = upperTopY + y;
+            List<Point> tilesInRow = new();
+
             for (int x = 0; x < width; x++)
             {
                 bool isEdge = (x == 0 || x == width - 1 || y == 0 || y == height_up - 1);
-                int worldX = origin.X - width / 2 + x;
-                int worldY = origin.Y - height_dn - height_up + 1 + y;
-                if (isEdge && WorldGen.InWorld(worldX, worldY))
-                    _tilesToPlace_up.Add(new Point(worldX, worldY));
+                if (isEdge)
+                {
+                    int worldX = origin.X - width / 2 + x;
+                    if (WorldGen.InWorld(worldX, worldY))
+                    {
+                        tilesInRow.Add(new Point(worldX, worldY));
+                    }
+                }
+            }
+
+            if (tilesInRow.Count > 0)
+            {
+                _placeTiles_up_ByY[worldY] = tilesInRow;
+                if (!_allYs.Contains(worldY)) _allYs.Add(worldY);
             }
         }
 
-        // 初始化：从最底层开始
-        _currentY = _minY;
-        _isProcessing = true;
-        _timer = 0;
+        // ✅ 关键修正：从下往上生成 → Y 从大到小排序
+        _allYs.Sort((a, b) => b.CompareTo(a)); // 大 Y（底部）在前，小 Y（顶部）在后
     }
 
     public override void PostUpdateEverything()
     {
-        if (!_isProcessing) return;
-        _timer++;
+        if (!_isProcessing || _allYs.Count == 0) return;
 
-        // 控制节奏：每 5 帧处理一层
-        if (_timer % 5 != 0) return;
+        _delayTimer++;
 
-        Player player = Main.player[Main.myPlayer];
-
-        // ✅ 主循环：从下往上，逐层处理
-        if (_currentY >= _maxY)
+        // ✅ 每 5 帧处理一行（从底部开始向上）
+        if (_delayTimer >= 5)
         {
-            ProcessLayer(_currentY);
-            _currentY--;
-            return;
-        }
+            int currentY = _allYs[_currentIndex];
 
-        // ✅ 所有层处理完毕：放置最终家具
-        if (_currentY < _maxY && _isProcessing)
-        {
-            // 放置火把（准备）
-            if (!_pendingTorchPlacement)
+            // 🔸 挖掘 Tile
+            if (_digTilesByY.TryGetValue(currentY, out var digList))
             {
-                PlaceTorchAtOffset();
-                return;
+                foreach (var p in digList)
+                {
+                    WorldGen.KillTile(p.X, p.Y, fail: false, effectOnly: false);
+                }
             }
 
-            // 强制放置火把
-            if (_pendingTorchPlacement)
+            // 🔸 清除 Wall
+            if (_killWallsByY.TryGetValue(currentY, out var killWallList))
             {
-                if (WorldGen.InWorld(_torchX, _torchY))
+                foreach (var p in killWallList)
                 {
-                    WorldGen.KillTile(_torchX, _torchY, fail: false, effectOnly: false, noItem: true);
-                    if (WorldGen.PlaceObject(_torchX, _torchY, TileID.Torches, true))
+                    WorldGen.KillWall(p.X, p.Y, fail: false);
+                }
+            }
+
+            // 🔸 放置 Wall
+            if (_placeWallsByY.TryGetValue(currentY, out var placeWallList))
+            {
+                foreach (var p in placeWallList)
+                {
+                    if (WorldGen.InWorld(p.X, p.Y))
                     {
-                        WorldGen.SquareTileFrame(_torchX, _torchY);
+                        Tile tile = Main.tile[p.X, p.Y];
+                        if (tile != null && tile.WallType != WallID.Wood)
+                        {
+                            WorldGen.PlaceWall(p.X, p.Y, WallID.Wood, mute: true);
+                        }
                     }
                 }
-                _pendingTorchPlacement = false;
             }
 
-            // 放置工作台和椅子
-            PlaceWorkbenchAndChair();
-
-            // 清理
-            _tilesToDig?.Clear();
-            _wallsToKill?.Clear();
-            _wallsToPlace?.Clear();
-            _tilesToPlace_dn?.Clear();
-            _tilesToPlace_up?.Clear();
-            _isProcessing = false;
-        }
-    }
-
-    // 处理指定 Y 层的所有操作
-    private void ProcessLayer(int y)
-    {
-        // 1️⃣ 挖掘该层所有瓦片
-        foreach (Point p in _tilesToDig)
-        {
-            if (p.Y == y)
+            // 🔸 放置下层平台（U 形）
+            if (_placeTiles_dn_ByY.TryGetValue(currentY, out var placeDnList))
             {
-                WorldGen.KillTile(p.X, p.Y, fail: false, effectOnly: false);
-            }
-        }
-
-        // 2️⃣ 清除该层墙
-        foreach (Point p in _wallsToKill)
-        {
-            if (p.Y == y)
-            {
-                WorldGen.KillWall(p.X, p.Y, fail: false);
-            }
-        }
-
-        // 3️⃣ 放置该层墙（内部）
-        foreach (Point p in _wallsToPlace)
-        {
-            if (p.Y == y)
-            {
-                if (!Main.wallDungeon[Main.tile[p.X, p.Y].WallType] && 
-                    Main.tile[p.X, p.Y].WallType != WallID.None)
+                foreach (var p in placeDnList)
                 {
-                    continue; // 避免覆盖特殊墙
-                }
-
-                WorldGen.PlaceWall(p.X, p.Y, WallID.Wood);
-                WorldGen.SquareWallFrame(p.X, p.Y);
-            }
-        }
-
-        // 4️⃣ 放置该层结构
-        // 下层平台
-        var toPlace_dn = new List<Point>(_tilesToPlace_dn);
-        foreach (Point p in toPlace_dn)
-        {
-            if (p.Y == y && !Main.tile[p.X, p.Y].HasTile)
-            {
-                if (WorldGen.PlaceTile(p.X, p.Y, TileID.Platforms))
-                {
-                    WorldGen.SquareTileFrame(p.X, p.Y, true);
-                    _tilesToPlace_dn.Remove(p);
+                    if (WorldGen.InWorld(p.X, p.Y))
+                    {
+                        Tile tile = Main.tile[p.X, p.Y];
+                        if (tile != null && !tile.HasTile)
+                        {
+                            if (WorldGen.PlaceTile(p.X, p.Y, TileID.Platforms))
+                            {
+                                WorldGen.SquareTileFrame(p.X, p.Y, true);
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        // 上层木块
-        var toPlace_up = new List<Point>(_tilesToPlace_up);
-        foreach (Point p in toPlace_up)
-        {
-            if (p.Y == y && !Main.tile[p.X, p.Y].HasTile)
+            // 🔸 放置上层木块（环形）
+            if (_placeTiles_up_ByY.TryGetValue(currentY, out var placeUpList))
             {
-                if (WorldGen.PlaceTile(p.X, p.Y, TileID.WoodBlock))
+                foreach (var p in placeUpList)
                 {
-                    WorldGen.SquareTileFrame(p.X, p.Y, true);
-                    _tilesToPlace_up.Remove(p);
+                    if (WorldGen.InWorld(p.X, p.Y))
+                    {
+                        Tile tile = Main.tile[p.X, p.Y];
+                        if (tile != null && !tile.HasTile)
+                        {
+                            if (WorldGen.PlaceTile(p.X, p.Y, TileID.WoodBlock))
+                            {
+                                WorldGen.SquareTileFrame(p.X, p.Y, true);
+                            }
+                        }
+                    }
                 }
+            }
+
+            // 推进到下一行
+            _currentIndex++;
+            _delayTimer = 0;
+
+            // 全部完成
+            if (_currentIndex >= _allYs.Count)
+            {
+                _isProcessing = false;
+                PlaceTorchAtOffset();
+                PlaceWorkbenchAndChair();
             }
         }
     }
 
-    // 准备火把位置
+    // ========== 一次性放置家具 ==========
+
     private void PlaceTorchAtOffset()
     {
         Player player = Main.player[Main.myPlayer];
-        if (!_isProcessing) return;
-
         int width = 6;
         int height_dn = 4;
-        int dx;
-        int torchX;
         int torchY = _origin.Y - height_dn;
 
+        int torchX;
         if (player.direction == 1)
         {
-            dx = width / 2 - 1;
-            torchX = _origin.X + dx - 1;
+            torchX = _origin.X + (width / 2 - 1) - 1; // 右侧内一格
         }
         else
         {
-            dx = -width / 2 + 1;
-            torchX = _origin.X + dx;
+            torchX = _origin.X + (-width / 2 + 1); // 左侧内一格
         }
 
-        _torchX = torchX;
-        _torchY = torchY;
-        _pendingTorchPlacement = true;
+        if (WorldGen.InWorld(torchX, torchY))
+        {
+            Tile tile = Main.tile[torchX, torchY];
+            tile.ClearTile();       // 清空整个格子
+            if (tile != null && !tile.HasTile && !tile.TopSlope && !tile.BottomSlope)
+            {
+                if (WorldGen.PlaceObject(torchX, torchY, TileID.Torches, true))
+                {
+                    WorldGen.SquareTileFrame(torchX, torchY);
+                }
+            }
+        }
     }
 
-    // 放置工作台和椅子
     private void PlaceWorkbenchAndChair()
     {
         Player player = Main.player[Main.myPlayer];
-        if (!_isProcessing) return;
-
         int height_dn = 4;
-        int torchY = _origin.Y - height_dn;
-        int furnitureY = torchY - 1;
-        int workbenchX, chairX;
+        int furnitureY = _origin.Y - height_dn - 1; // 火把上方一格
 
+        int workbenchX, chairX;
         if (player.direction == 1)
         {
             workbenchX = _origin.X - 1;
@@ -281,8 +297,7 @@ public class JailFactory : ModSystem
         }
 
         WorldGen.PlaceObject(workbenchX, furnitureY, TileID.WorkBenches, true);
-        WorldGen.PlaceObject(chairX, furnitureY, TileID.Chairs,
-            mute: true, style: 0, alternate: 0, random: -1, direction: player.direction);
+        WorldGen.PlaceObject(chairX, furnitureY, TileID.Chairs, mute: true, style: 0, direction: player.direction);
 
         WorldGen.SquareTileFrame(workbenchX, furnitureY);
         WorldGen.SquareTileFrame(chairX, furnitureY);

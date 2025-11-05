@@ -210,6 +210,9 @@ public class JailAFactory : ModSystem
                     WorldGen.SquareTileFrame(p.X, p.Y, true);
                     if (p.Y == y)
                     {
+                        ForcePlaceTile(_origin.X - 2, _origin.Y, TileID.GrayBrick);
+                        ForcePlaceTile(_origin.X,     _origin.Y, TileID.GrayBrick);
+                        ForcePlaceTile(_origin.X + 2, _origin.Y, TileID.GrayBrick);
                         WorldGen.PlaceTile(_origin.X - 1,  _origin.Y, TileID.Platforms);
                         WorldGen.PlaceTile(_origin.X + 1,  _origin.Y, TileID.Platforms);
                     }
@@ -247,6 +250,18 @@ public class JailAFactory : ModSystem
         _pendingTorchPlacement = true;
     }
 
+    private void ForcePlaceTile(int x, int y, ushort type)//强制放置物块,无视规则
+    {
+        if (!WorldGen.InWorld(x, y)) return;
+        Tile tile = Main.tile[x, y];
+        tile.TileType = type;
+        tile.HasTile = true;
+        WorldGen.SquareTileFrame(x, y);
+
+        // 多人同步
+        if (Main.netMode != NetmodeID.SinglePlayer)
+            NetMessage.SendTileSquare(-1, x, y, 1);
+    }
     //放置工作台和椅子
     private void PlaceFurniture()
     {
@@ -269,8 +284,12 @@ public class JailAFactory : ModSystem
         }
 
         // ✅ 放置平台（可选）
-        WorldGen.PlaceTile(center_X - 1, center_Y, TileID.Platforms);
-        WorldGen.PlaceTile(center_X + 1, center_Y, TileID.Platforms);
+        //WorldGen.PlaceTile(center_X - 1, center_Y, TileID.Platforms);
+        //WorldGen.PlaceTile(center_X + 1, center_Y, TileID.Platforms);
+        //  放置石砖
+        //ForcePlaceTile(center_X - 2, center_Y, TileID.GrayBrick);
+        //ForcePlaceTile(center_X,     center_Y, TileID.GrayBrick);
+        //ForcePlaceTile(center_X + 2, center_Y, TileID.GrayBrick);
 
         // ✅ 放置工作台
         if (WorldGen.PlaceObject(workbenchX, center_Y - 1, TileID.WorkBenches, mute: true))
