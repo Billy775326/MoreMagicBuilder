@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MoreMagicBuilder")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cf6907bfbcb8eb878af2fee727f5cd9b279ad18d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07dfb54b08f1a25ab38f119855b86ff4e96b7777")]
 [assembly: System.Reflection.AssemblyProductAttribute("MoreMagicBuilder")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MoreMagicBuilder")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
