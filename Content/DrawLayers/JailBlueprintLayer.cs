@@ -63,11 +63,11 @@ namespace MoreMagicBuilder.Content.DrawLayers
         {
             if (Main.dedServ || !_isHoldingBlueprintItem) return;
             
-            if (!_debugPrinted)
-            {
-                Main.NewText($"[JailBlueprintLayer] Final logic: Mouse is Bottom Center (X-3, Y-9).", 0, 200, 255);
-                _debugPrinted = true;
-            }
+            // if (!_debugPrinted)
+            // {
+            //     Main.NewText($"[JailBlueprintLayer] Final logic: Mouse is Bottom Center (X-3, Y-9).", 0, 200, 255);
+            //     _debugPrinted = true;
+            // }
 
             // 使用预先计算好的坐标
             Point blueprintTopLeftTile = _blueprintTopLeftTile;

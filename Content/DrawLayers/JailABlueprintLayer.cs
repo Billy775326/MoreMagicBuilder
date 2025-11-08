@@ -63,11 +63,11 @@ namespace MoreMagicBuilder.Content.DrawLayers
         {
             if (Main.dedServ || !_isHoldingBlueprintItem) return;
             
-            if (!_debugPrinted)
-            {
-                Main.NewText($"[JailABlueprintLayer] Final logic: Mouse is Bottom Center (X-3, Y-9).", 0, 200, 255);
-                _debugPrinted = true;
-            }
+            // if (!_debugPrinted)
+            // {
+            //     Main.NewText($"[JailABlueprintLayer] Final logic: Mouse is Bottom Center (X-3, Y-9).", 0, 200, 255);
+            //     _debugPrinted = true;
+            // }
 
             // 使用预先计算好的坐标
             Point blueprintTopLeftTile = _blueprintTopLeftTile;
@@ -82,7 +82,7 @@ namespace MoreMagicBuilder.Content.DrawLayers
                     if (x == 0 || x == StructureWidth - 1 || y == 0 || y == StructureHeight - 1)
                     {
                         // 粒子数量：Main.rand.Next(1, 2) 永远只生成 1 个
-                        int particleCount = Main.rand.Next(1, 2); 
+                        int particleCount = Main.rand.Next(1, 3); 
 
                         for (int i = 0; i < particleCount; i++)
                         {
@@ -101,7 +101,7 @@ namespace MoreMagicBuilder.Content.DrawLayers
                                 worldPos - new Vector2(4), 
                                 8, 8,
                                 255	,  // 粒子
-                                Scale: Main.rand.NextFloat(0.2f, 0.3f) // 随机大小
+                                Scale: Main.rand.NextFloat(0.3f, 0.5f) // 随机大小
                             );
 
                             dust.noGravity = true;  
