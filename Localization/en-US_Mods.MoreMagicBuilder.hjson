@@ -15,4 +15,9 @@ Items: {
 		DisplayName: Sml Hs
 		Tooltip: ""
 	}
+
+	MedHs: {
+		DisplayName: Med Hs
+		Tooltip: ""
+	}
 }

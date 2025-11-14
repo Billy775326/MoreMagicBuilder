@@ -8,7 +8,7 @@ using Terraria.DataStructures;
 
 namespace MoreMagicBuilder.Content.Items
 {
-    public class JailA : ModItem
+    public class MedHs : ModItem
     {
         
 
@@ -19,7 +19,7 @@ namespace MoreMagicBuilder.Content.Items
             //Item.useStyle = ItemUseStyleID.Thrust;//生命水晶使用模式
             Item.autoReuse = false;//自动连用
             Item.rare = ItemRarityID.White;//稀有度
-            Item.value = Item.buyPrice(silver: 1);//价值
+            Item.value = Item.buyPrice(silver: 2,copper:25);//价值
             Item.useAnimation = 15;//使用一次的动画时间
             Item.useTime = 15;//使用一次的时间
             Item.consumable = true;//消耗品
@@ -46,10 +46,11 @@ namespace MoreMagicBuilder.Content.Items
         public override void AddRecipes()
         {
             CreateRecipe()
-                .AddIngredient(ItemID.Wood, 20)       // 20 木头
-                .AddIngredient(ItemID.StoneBlock, 5) // 5 石头 GrayBrick石砖
-                .AddIngredient(ItemID.IronOre, 3)    // 3 铁矿 IronBrick 
-                .AddIngredient(ItemID.Gel, 1)        // 1 凝胶
+                .AddIngredient(ItemID.Wood, 40)       // 40 木头
+                .AddIngredient(ItemID.StoneBlock, 20) // 20 石头 GrayBrick石砖
+                .AddIngredient(ItemID.Book, 5)        // 5 书 
+                .AddIngredient(ItemID.SandBlock, 3)       // 3 沙子
+                .AddIngredient(ItemID.Gel, 2)         // 2 凝胶
                 .AddTile(TileID.Furnaces)           //制作台 熔炉
                 .Register(); // 注册配方
         }
@@ -60,7 +61,7 @@ namespace MoreMagicBuilder.Content.Items
             Vector2 myVector = Main.MouseWorld;//获取鼠标在世界中的位置单位是“像素”
             Point p = myVector.ToTileCoordinates();//将“像素坐标”转换为“图块坐标”
             //GenerateStructure(p);
-            ModContent.GetInstance<JailAFactory>().StartGenerating(p);
+            ModContent.GetInstance<MedHsFactory>().StartGenerating(p);
             //Main.NewText("🔧 UseItem 被调用！", 255, 0, 0); // 红色提示
 
             // ✅ 使用成功，返回 true 表示消耗物品

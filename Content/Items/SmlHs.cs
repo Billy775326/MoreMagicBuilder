@@ -19,7 +19,7 @@ namespace MoreMagicBuilder.Content.Items
             //Item.useStyle = ItemUseStyleID.Thrust;//生命水晶使用模式
             Item.autoReuse = false;//自动连用
             Item.rare = ItemRarityID.White;//稀有度
-            Item.value = Item.buyPrice(silver: 4,copper:8);//价值
+            Item.value = Item.buyPrice(silver: 1,copper:50);//价值
             Item.useAnimation = 15;//使用一次的动画时间
             Item.useTime = 15;//使用一次的时间
             Item.consumable = true;//消耗品
